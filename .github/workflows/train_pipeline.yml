@@ -47,12 +47,12 @@ jobs:
             --resource-group rg-nathan-mpops \
             --workspace-name ws-aaron-mlops
 
-  download:
-    needs: train
-    runs-on: ubuntu-latest
+download:
+needs: train
+runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Azure Login
@@ -60,38 +60,46 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Download Registered Model
-        run: |
-          az extension add -n ml
-          az configure --defaults group=rg-nathan-mpops workspace=ws-aaron-mlops
+      - name: Azure CLI Download Model
+        uses: Azure/CLI@v2.2.0
+        with:
+          azcliversion: 2.80.0
+          inlineScript: |
+            az extension add -n ml -y
+            az configure --defaults group=rg-nathan-mpops workspace=ws-aaron-mlops
 
-          MODEL_VERSION=$(az ml model list \
-            --name spam-classifier \
-            --query "[0].version" -o tsv)
+            echo "Fetching latest version of spam-classifier model..."
+            MODEL_VERSION=$(az ml model list --name spam-classifier --query "[0].version" -o tsv)
 
-          DOWNLOAD_PATH="inference/download_temp"
-          mkdir -p $DOWNLOAD_PATH
-          az ml model download \
-            --name spam-classifier \
-            --version $MODEL_VERSION \
-            --download-path $DOWNLOAD_PATH
-          MODEL_FILE_NAME="model.pkl"
-          MODEL_SOURCE_PATH=$(find "$DOWNLOAD_PATH" -type f -name "$MODEL_FILE_NAME" -print -quit)
-          if [ -f "$MODEL_SOURCE_PATH" ]; then
-            mkdir -p inference
-            mv "$MODEL_SOURCE_PATH" "inference/$MODEL_FILE_NAME"
-            echo "Model successfully moved to inference/$MODEL_FILE_NAME"
-          else
-            echo "Error: Could not find $MODEL_FILE_NAME inside the download path. Check model saving logic."
-            ls -R $DOWNLOAD_PATH
-            exit 1
-          fi
+            DOWNLOAD_PATH="inference/download_temp"
+            mkdir -p $DOWNLOAD_PATH
+
+            echo "Downloading model version $MODEL_VERSION..."
+            az ml model download \
+              --name spam-classifier \
+              --version $MODEL_VERSION \
+              --download-path $DOWNLOAD_PATH
+
+            # Locate model.pkl inside nested folders
+            MODEL_FILE=$(find "$DOWNLOAD_PATH" -type f -name "model.pkl" -print -quit)
+
+            if [ -f "$MODEL_FILE" ]; then
+              mkdir -p inference
+              mv "$MODEL_FILE" "inference/model.pkl"
+              echo "✅ Model successfully moved to inference/model.pkl"
+            else
+              echo "❌ Could not find model.pkl in $DOWNLOAD_PATH. Listing folder contents:"
+              ls -R $DOWNLOAD_PATH
+              exit 1
+            fi
 
       - name: Upload artifact for Docker stage
         uses: actions/upload-artifact@v4
         with:
           name: docker-config
           path: inference
+
+
     # Add this new job block at the same indentation level as 'train' and 'download'
 
 #   deploy:

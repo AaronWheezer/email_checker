@@ -63,6 +63,8 @@ jobs:
       - name: Download Registered Model
         run: |
           az extension add -n ml
+          az configure --defaults group=rg-nathan-mpops workspace=ws-aaron-mlops
+
           MODEL_VERSION=$(az ml model list \
             --name spam-classifier \
             --query "[0].version" -o tsv)
@@ -77,3 +79,67 @@ jobs:
         with:
           name: docker-config
           path: inference
+    # Add this new job block at the same indentation level as 'train' and 'download'
+
+#   deploy:
+#     needs: download # Wait for the model download and artifact upload to finish
+#     runs-on: ubuntu-latest # Using ubuntu-latest for Docker steps is fine, unless you need self-hosted
+
+#     # SET PERMISSIONS for GitHub Container Registry (GHCR) access
+#     permissions:
+#       contents: read
+#       packages: write
+      
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       # 1. Download the artifact (model + FastAPI code)
+#       - name: Download API Code for Inference
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: docker-config
+#           path: inference # Downloads contents to the 'inference' directory
+
+#       # 2. Gather Docker Metadata (Image Name and Tagging)
+#       - name: Docker -- Gather Tags
+#         id: docker_meta_data
+#         uses: docker/metadata-action@v5
+#         with:
+#           # IMPORTANT: CHANGE 'YOUR_GHCR_USERNAME' to 'AaronWheezer' (based on your reference code)
+#           images: ghcr.io/AaronWheezer/spam-classifier-api 
+#           # Generate tags based on branch name (main) and commit SHA
+#           tags: |
+#             type=ref,event=branch
+#             type=sha
+            
+#       # 3. Login to GitHub Container Registry (GHCR)
+#       - name: Docker -- Login to GHCR
+#         uses: docker/login-action@v3
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.repository_owner }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
+
+#       # 4. Build and Push the Docker Image
+#       - name: Docker Build and push
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: ./inference # Use the downloaded artifact directory as context
+#           push: true
+#           tags: ${{ steps.docker_meta_data.outputs.tags }}
+          
+#       # 5. Deploy to Kubernetes (Assuming kubectl is configured on runner)
+#       # NOTE: This part is highly dependent on your cluster setup and config files.
+#       - name: Deploy to Kubernetes
+#         run: |
+#           IMAGE_TAG=$(echo "${{ steps.docker_meta_data.outputs.tags }}" | head -n 1)
+          
+#           echo "Deploying image: $IMAGE_TAG"
+          
+#           # Replace placeholder tag in your deployment manifest
+#           sed -i 's|spam-classifier-api:LATEST_TAG_PLACEHOLDER|$IMAGE_TAG|g' ./kubernetes/deployment.yaml
+          
+#           # Apply the deployment and service manifests
+#           kubectl apply -f ./kubernetes/deployment.yaml
+#           kubectl apply -f ./kubernetes/service.yaml

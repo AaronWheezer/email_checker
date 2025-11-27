@@ -24,16 +24,16 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Submit training job
+      - name: Submit Pipeline Job
         id: submit
         run: |
           JOB_ID=$(az ml job create \
-            --file backend/job.yaml \
+            --file backend/pipeline.yml \  
             --resource-group rg-nathan-mpops \
             --workspace-name ws-aaron-mlops \
             --query name -o tsv)
 
-          echo "Training job submitted: $JOB_ID"
+          echo "Pipeline job submitted: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
 
       - name: Stream logs until job finishes
@@ -43,28 +43,4 @@ jobs:
             --resource-group rg-nathan-mpops \
             --workspace-name ws-aaron-mlops
 
-  register:
-    name: Register Model
-    needs: train
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Install Azure ML CLI
-        run: |
-          az extension add -n ml
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Register model from training run
-        run: |
-          az configure --defaults group=rg-nathan-mpops workspace=ws-aaron-mlops
-
-          az ml model create \
-            --name spam-classifier \
-            --path "azureml://jobs/${{ needs.train.outputs.job_id }}/outputs/model" \
-            --type mlflow_model
-
-          echo "Model registered from job: ${{ needs.train.outputs.job_id }}"
+# *** REMOVE THE ENTIRE REGISTER JOB HERE ***

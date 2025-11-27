@@ -55,20 +55,17 @@ def main():
     # 9. Register the model explicitly with a signature 
     from mlflow.models.signature import infer_signature
     signature = infer_signature(X_test, predictions)
-    
-    output_dir = "./outputs/model"
-    import os
-    os.makedirs(output_dir, exist_ok=True)
 
+    # --- CRITICAL CHANGE START ---
+    # Use 'model' as the path. Azure ML will put this in /outputs/model/
     mlflow.sklearn.save_model(
         sk_model=pipeline,
-        path=output_dir,
+        path='model', 
         signature=signature
     )
+    # --- CRITICAL CHANGE END ---
 
-    
     print("Model trained and registered.")
-    # REMOVE mlflow.end_run() - Azure ML handles job termination
     
 if __name__ == "__main__":
     main()

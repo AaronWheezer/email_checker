@@ -1,0 +1,58 @@
+# backend/pipeline.yml
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+
+type: pipeline
+display_name: Spam-Classifier-Pipeline
+description: Preprocessing and Training for Spam Classifier
+
+# Define the default compute target for all steps
+settings:
+  default_compute: azureml:spam-cluster
+
+inputs:
+  raw_data_input:
+    type: uri_file
+    path: azureml:Spam_HAM:1 # Your registered data asset
+
+# Define the two chained components/steps
+jobs:
+  # 1. Preprocessing Step
+  preprocess_step:
+    type: command
+    code: ./src
+    environment:
+      image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest
+      conda_file: ./src/conda.yaml
+    
+    command: >-
+      python preprocess.py 
+      --raw_data ${{inputs.raw_data}}
+      --output_data ${{outputs.clean_data}}
+      
+    inputs:
+      raw_data: ${{parent.inputs.raw_data_input}}
+      
+    outputs:
+      clean_data:
+        type: uri_folder # Output will be a folder containing the processed CSV
+
+  # 2. Training Step
+  train_step:
+    type: command
+    code: ./src
+    environment:
+      image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest
+      conda_file: ./src/conda.yaml
+      
+    command: >-
+      python train_pipeline.py 
+      --clean_data ${{inputs.clean_data_input}}
+      --model_output ${{outputs.model_output}}
+      
+    inputs:
+      # Use the output from the previous step as input for this step
+      clean_data_input: ${{jobs.preprocess_step.outputs.clean_data}}
+      
+    outputs:
+      model_output:
+        type: mlflow_model # Automatically registers the MLflow model artifact

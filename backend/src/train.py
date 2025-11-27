@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+from sklearn import pipeline
 import mlflow
 import mlflow.sklearn
 from sklearn.model_selection import train_test_split
@@ -45,17 +46,12 @@ def main():
         ('vectorizer', CountVectorizer(stop_words='english', max_features=10000)),
         ('classifier', MultinomialNB())
     ])
-
+    print("Training model...")
+    pipeline.fit(X_train, y_train) 
     # 7. Evaluate (DEFINES predictions)
     predictions = pipeline.predict(X_test)
     
-    # 6. Train (MLflow autologs this)
-    print("Training model...")
-    pipeline.fit(X_train, y_train) 
-    # The variables are now defined and ready for fitting!
 
-    # ... (Evaluation) ...
-    
     # 9. Register the model explicitly with a signature 
     from mlflow.models.signature import infer_signature
     signature = infer_signature(X_test, predictions)

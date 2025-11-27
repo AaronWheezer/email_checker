@@ -56,13 +56,16 @@ def main():
     from mlflow.models.signature import infer_signature
     signature = infer_signature(X_test, predictions)
     
-    # Save model to the 'outputs' folder so Azure picks it up
-    mlflow.sklearn.log_model(
+    output_dir = "./outputs/model"
+    import os
+    os.makedirs(output_dir, exist_ok=True)
+
+    mlflow.sklearn.save_model(
         sk_model=pipeline,
-        artifact_path="spam_model",
-        signature=signature,
-        registered_model_name="Spam_Classifier_Model" 
+        path=output_dir,
+        signature=signature
     )
+
     
     print("Model trained and registered.")
     # REMOVE mlflow.end_run() - Azure ML handles job termination

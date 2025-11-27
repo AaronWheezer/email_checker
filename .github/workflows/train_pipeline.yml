@@ -28,10 +28,10 @@ jobs:
         id: submit
         run: |
           JOB_ID=$(az ml job create \
-            --file backend/pipeline.yaml \  
-            --resource-group rg-nathan-mpops \
-            --workspace-name ws-aaron-mlops \
-            --query name -o tsv)
+            --file backend/pipeline.yml \  # <--- MUST HAVE A BACKSLASH
+            --resource-group rg-nathan-mpops \ # <--- MUST HAVE A BACKSLASH
+            --workspace-name ws-aaron-mlops \ # <--- MUST HAVE A BACKSLASH
+            --query name -o tsv)             # <--- NO BACKSLASH HERE
 
           echo "Pipeline job submitted: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT

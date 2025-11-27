@@ -28,14 +28,13 @@ def main():
         df = pd.read_csv(args.data, encoding='latin-1')
 
     # 4. Preprocessing 
-    df = df.dropna(subset=['Text', 'Label'])
+    df = df.dropna(subset=['text', 'label'])
     
-    if df['Label'].dtype == 'object':
+    if df['label'].dtype == 'object':
          # Assuming 'spam' and 'ham' are the labels based on your dataset
-         df['Label'] = df['Label'].map({'Spam': 1, 'Ham': 0})
-
-    X = df['Text']
-    y = df['Label'].astype(int)
+         df['label'] = df['label'].map({'Spam': 1, 'Ham': 0})
+    X = df['text']
+    y = df['label'].astype(int)
 
     # 5. Split Data (DEFINES X_train and y_train)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)

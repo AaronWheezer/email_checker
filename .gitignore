@@ -1,2 +1,3 @@
 .csv
 node_modules/
+data/spam_Emails_data.csv

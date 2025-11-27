@@ -1,26 +1,31 @@
 name: train-and-register
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/src/**'
+      - 'backend/pipeline.yaml'
   workflow_dispatch:
 
 jobs:
   train:
-    name: Train Model
     runs-on: ubuntu-latest
 
     outputs:
       job_id: ${{ steps.submit.outputs.job_id }}
 
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install Azure ML CLI
+      - name: Install ML extension
         run: |
           az extension add -n ml
 
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
@@ -28,19 +33,47 @@ jobs:
         id: submit
         run: |
           JOB_ID=$(az ml job create \
-            --file backend/pipeline.yaml \  # <--- MUST HAVE A BACKSLASH
-            --resource-group rg-nathan-mpops \ # <--- MUST HAVE A BACKSLASH
-            --workspace-name ws-aaron-mlops \ # <--- MUST HAVE A BACKSLASH
-            --query name -o tsv)             # <--- NO BACKSLASH HERE
+            --file backend/pipeline.yaml \
+            --resource-group rg-nathan-mpops \
+            --workspace-name ws-aaron-mlops \
+            --query name -o tsv)
 
-          echo "Pipeline job submitted: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
 
-      - name: Stream logs until job finishes
+      - name: Stream Logs
         run: |
           az ml job stream \
             --name ${{ steps.submit.outputs.job_id }} \
             --resource-group rg-nathan-mpops \
             --workspace-name ws-aaron-mlops
 
-# *** REMOVE THE ENTIRE REGISTER JOB HERE ***
+  download:
+    needs: train
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Download Registered Model
+        run: |
+          az extension add -n ml
+          MODEL_VERSION=$(az ml model list \
+            --name spam-classifier \
+            --query "[0].version" -o tsv)
+
+          az ml model download \
+            --name spam-classifier \
+            --version $MODEL_VERSION \
+            --download-path inference
+
+      - name: Upload artifact for Docker stage
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-config
+          path: inference

@@ -18,12 +18,16 @@ def main():
 
     # Preprocessing 
     df = df.dropna(subset=['text', 'label'])
-    
+
+    # Map labels to 0/1
     if df['label'].dtype == 'object':
         df['label'] = df['label'].map({'Spam': 1, 'Ham': 0})
 
+    # Ensure types are integers
+    df['label'] = df['label'].astype(int)
+
     print(f"Cleaned dataset size: {len(df)} rows")
-    
+
     # Save processed data to the output path
     os.makedirs(args.output_data, exist_ok=True)
     output_path = os.path.join(args.output_data, 'processed_spam_data.csv')

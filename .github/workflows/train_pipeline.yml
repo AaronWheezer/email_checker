@@ -31,7 +31,7 @@ jobs:
 
       - name: Submit Training Job
         run: |
-          az ml job create --file job.yml \
+            az ml job create --file backend/job.yml \
             --resource-group rg-nathan-mpops \
             --workspace-name ws-aaron-mlops \
             --stream

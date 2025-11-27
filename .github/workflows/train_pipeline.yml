@@ -76,7 +76,7 @@ jobs:
             --version $MODEL_VERSION \
             --download-path $DOWNLOAD_PATH
           MODEL_FILE_NAME="model.pkl"
-          MODEL_SOURCE_PATH=$(find $DOWNLOAD_PATH -name $MODEL_FILE_NAME)
+          MODEL_SOURCE_PATH=$(find "$DOWNLOAD_PATH" -name "$MODEL_FILE_NAME" -print -quit)
           if [ -f "$MODEL_SOURCE_PATH" ]; then
             mkdir -p inference
             mv "$MODEL_SOURCE_PATH" "inference/$MODEL_FILE_NAME"

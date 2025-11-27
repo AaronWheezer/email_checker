@@ -70,6 +70,7 @@ jobs:
             --query "[0].version" -o tsv)
 
           DOWNLOAD_PATH="inference/download_temp"
+          mkdir -p $DOWNLOAD_PATH
           az ml model download \
             --name spam-classifier \
             --version $MODEL_VERSION \

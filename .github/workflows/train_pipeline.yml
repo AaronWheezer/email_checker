@@ -47,9 +47,9 @@ jobs:
             --resource-group rg-nathan-mpops \
             --workspace-name ws-aaron-mlops
 
-download:
-needs: train
-runs-on: ubuntu-latest
+  download:
+    needs: train
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository

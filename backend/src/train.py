@@ -3,6 +3,9 @@ import pandas as pd
 import mlflow
 import mlflow.sklearn
 from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
 # ... (rest of imports) ...
 
 def main():
@@ -17,11 +20,40 @@ def main():
     parser.add_argument("--data", type=str, help="Path to input data")
     args = parser.parse_args()
     
-    # ... (Load Data, Preprocessing, Splitting, Pipeline build) ...
+# 3. Load Data
+    print(f"Loading data from {args.data}...")
+    try:
+        df = pd.read_csv(args.data)
+    except UnicodeDecodeError:
+        df = pd.read_csv(args.data, encoding='latin-1')
+
+    # 4. Preprocessing 
+    df = df.dropna(subset=['Text', 'Label'])
+    
+    if df['Label'].dtype == 'object':
+         # Assuming 'spam' and 'ham' are the labels based on your dataset
+         df['Label'] = df['Label'].map({'Spam': 1, 'Ham': 0})
+
+    X = df['Text']
+    y = df['Label'].astype(int)
+
+    # 5. Split Data (DEFINES X_train and y_train)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # 6. Build Pipeline (DEFINES pipeline)
+    pipeline = Pipeline([
+        # Limit features to 10k to manage memory and complexity
+        ('vectorizer', CountVectorizer(stop_words='english', max_features=10000)),
+        ('classifier', MultinomialNB())
+    ])
+
+    # 7. Evaluate (DEFINES predictions)
+    predictions = pipeline.predict(X_test)
     
     # 6. Train (MLflow autologs this)
     print("Training model...")
-    pipeline.fit(X_train, y_train)
+    pipeline.fit(X_train, y_train) 
+    # The variables are now defined and ready for fitting!
 
     # ... (Evaluation) ...
     

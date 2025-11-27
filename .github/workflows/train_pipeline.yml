@@ -79,10 +79,10 @@ jobs:
               --name spam-classifier \
               --version $MODEL_VERSION \
               --download-path $DOWNLOAD_PATH
-
+            echo "Listing everything in $DOWNLOAD_PATH:"
+            ls -R $DOWNLOAD_PATH || true
             # Locate model.pkl inside nested folders
-            MODEL_FILE=$(find "$DOWNLOAD_PATH" -type f -name "model.pkl" -print -quit)
-
+            MODEL_FILE=$(find "$DOWNLOAD_PATH" -type f -name "*.pkl" -print -quit)
             if [ -f "$MODEL_FILE" ]; then
               mkdir -p inference
               mv "$MODEL_FILE" "inference/model.pkl"

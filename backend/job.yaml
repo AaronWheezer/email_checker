@@ -1,0 +1,26 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+
+# General Info
+display_name: spam-email-train-job
+experiment_name: spam-classification-experiment
+description: Training pipeline for Kaggle Spam/Ham dataset
+
+# Code and Environment
+code: ./src
+environment:
+  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest
+  conda_file: ./conda.yml
+
+# The Command to run
+command: >-
+  python train.py 
+  --data ${{inputs.spam_data}}
+
+# Inputs (Connecting to your uploaded data)
+inputs:
+  spam_data:
+    type: uri_file
+    path: azureml:Spam_HAM:1  # <--- This references your uploaded CSV directly!
+
+# Compute
+compute: azureml:serverless # We use serverless (on-demand) so we don't manage VMs

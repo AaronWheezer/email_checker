@@ -13,7 +13,7 @@ def main():
     parser.add_argument("--model_output", type=str)
     args = parser.parse_args()
 
-    df = pd.read_csv(os.path.join(args.clean_data, "cleaned.csv"))
+    df = pd.read_csv(os.path.join(args.clean_data, "processed_spam_data.csv"))
 
     X = df["text"]
     y = df["label"]

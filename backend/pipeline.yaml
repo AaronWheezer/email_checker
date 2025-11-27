@@ -40,7 +40,7 @@ jobs:
 
     command: >-
       python train_pipeline.py
-      --clean_data ${{inputs.clean_data}}
+      --clean_data ${{inputs.clean_data_input}}
       --model_output ${{outputs.model_output}}
 
     inputs:

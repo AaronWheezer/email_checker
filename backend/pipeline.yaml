@@ -44,7 +44,7 @@ jobs:
       --model_output ${{outputs.model_output}}
 
     inputs:
-      clean_data_input: ${{parent.jobs.preprocess_step.outputs.clean_data}}
+      clean_data_input: ${{parent.jobs.preprocess_step.outputs.cleaned}}
 
     outputs:
       model_output:

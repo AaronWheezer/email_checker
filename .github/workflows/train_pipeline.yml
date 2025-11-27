@@ -28,7 +28,7 @@ jobs:
         id: submit
         run: |
           JOB_ID=$(az ml job create \
-            --file backend/pipeline.yml \  # <--- MUST HAVE A BACKSLASH
+            --file backend/pipeline.yaml \  # <--- MUST HAVE A BACKSLASH
             --resource-group rg-nathan-mpops \ # <--- MUST HAVE A BACKSLASH
             --workspace-name ws-aaron-mlops \ # <--- MUST HAVE A BACKSLASH
             --query name -o tsv)             # <--- NO BACKSLASH HERE

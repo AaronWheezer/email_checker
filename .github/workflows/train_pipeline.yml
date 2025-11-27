@@ -28,7 +28,7 @@ jobs:
         id: submit
         run: |
           JOB_ID=$(az ml job create \
-            --file backend/pipeline.yml \  
+            --file backend/pipeline.yaml \  
             --resource-group rg-nathan-mpops \
             --workspace-name ws-aaron-mlops \
             --query name -o tsv)

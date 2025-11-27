@@ -90,6 +90,8 @@ jobs:
             else
               echo "❌ Could not find model.pkl in $DOWNLOAD_PATH. Listing folder contents:"
               ls -R $DOWNLOAD_PATH
+              echo "Listing downloaded files:"
+              ls -R $DOWNLOAD_PATH/spam-classifier
               exit 1
             fi
 

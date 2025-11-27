@@ -69,10 +69,21 @@ jobs:
             --name spam-classifier \
             --query "[0].version" -o tsv)
 
+          DOWNLOAD_PATH="inference/download_temp"
           az ml model download \
             --name spam-classifier \
             --version $MODEL_VERSION \
-            --download-path inference
+            --download-path $DOWNLOAD_PATH
+          MODEL_FILE_NAME="model.pkl"
+          MODEL_SOURCE_PATH=$(find $DOWNLOAD_PATH -name $MODEL_FILE_NAME)
+          if [ -f "$MODEL_SOURCE_PATH" ]; then
+            mkdir -p inference
+            mv "$MODEL_SOURCE_PATH" "inference/$MODEL_FILE_NAME"
+            echo "Model successfully moved to inference/$MODEL_FILE_NAME"
+          else
+            echo "Error: Could not find $MODEL_FILE_NAME inside the download path. Check model saving logic."
+            exit 1
+          fi
 
       - name: Upload artifact for Docker stage
         uses: actions/upload-artifact@v4

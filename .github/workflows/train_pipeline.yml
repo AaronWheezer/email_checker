@@ -67,33 +67,16 @@ jobs:
           inlineScript: |
             az extension add -n ml -y
             az configure --defaults group=rg-nathan-mpops workspace=ws-aaron-mlops
-            MODEL_VERSION=$(az ml model list --name spam-classifier --query "[0].version" -o tsv)
-            DOWNLOAD_PATH="model_download_root"
-            mkdir -p "$DOWNLOAD_PATH"
+            MODEL_VERSION=$(az ml model list --name spam-classifier --query "sort_by(@,&version)[-1].version" -o tsv)
+            if [ -z "$MODEL_VERSION" ]; then
+              echo "No registered versions found for spam-classifier"; exit 1; fi
+            mkdir -p inference/model
             az ml model download \
               --name spam-classifier \
               --version "$MODEL_VERSION" \
-              --download-path "$DOWNLOAD_PATH"
+              --download-path inference/model
 
-      - name: Move model artifact
-        run: |
-          set -e
-          DOWNLOAD_PATH="model_download_root"
-          echo "Waiting 3 seconds..."; sleep 3
-          echo "Contents of $DOWNLOAD_PATH:"; ls -R "$DOWNLOAD_PATH" || true
-          MODEL_DIR=$(find "$DOWNLOAD_PATH" -type d -name "spam-classifier" -print -quit)
-          if [ -d "$MODEL_DIR" ]; then
-            echo "Found model directory: $MODEL_DIR"
-            mkdir -p inference/model
-            cp -r "$MODEL_DIR"/* "inference/model/"
-            echo "Copied model directory to inference/model/"
-            rm -rf "$DOWNLOAD_PATH"
-          else
-            echo "Model directory not found. Attempting to copy all contents..."
-            mkdir -p inference/model
-            cp -r "$DOWNLOAD_PATH"/* "inference/model/" || true
-            echo "Copied whatever was downloaded to inference/model/"
-          fi
+      # Move step no longer needed; download goes directly into inference/model
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

@@ -1,11 +1,12 @@
 import argparse
+import os
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
-import joblib
-import os
+import mlflow
+import mlflow.sklearn
 
 def main():
     parser = argparse.ArgumentParser()
@@ -29,9 +30,13 @@ def main():
 
     model.fit(X_train, y_train)
 
-    # --- SAVE TO MODEL OUTPUT DIRECTORY ---
+    # --- SAVE MLflow MODEL INTO OUTPUT DIRECTORY ---
+    # AzureML will register this folder because the pipeline output is type mlflow_model.
     os.makedirs(args.model_output, exist_ok=True)
-    joblib.dump(model, os.path.join(args.model_output, "model.pkl"))
+    mlflow.sklearn.save_model(
+        sk_model=model,
+        path=os.path.join(args.model_output, "model")
+    )
 
 if __name__ == "__main__":
     main()

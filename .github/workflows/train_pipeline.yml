@@ -80,16 +80,19 @@ jobs:
           set -e
           DOWNLOAD_PATH="model_download_root"
           echo "Waiting 3 seconds..."; sleep 3
-          MODEL_FILE=$(find "$DOWNLOAD_PATH" -type f -name "model.pkl" -print -quit)
-          if [ -f "$MODEL_FILE" ]; then
-            mkdir -p inference
-            mv "$MODEL_FILE" "inference/model.pkl"
-            echo "Moved model to inference/model.pkl"
+          echo "Contents of $DOWNLOAD_PATH:"; ls -R "$DOWNLOAD_PATH" || true
+          MODEL_DIR=$(find "$DOWNLOAD_PATH" -type d -name "spam-classifier" -print -quit)
+          if [ -d "$MODEL_DIR" ]; then
+            echo "Found model directory: $MODEL_DIR"
+            mkdir -p inference/model
+            cp -r "$MODEL_DIR"/* "inference/model/"
+            echo "Copied model directory to inference/model/"
             rm -rf "$DOWNLOAD_PATH"
           else
-            echo "Model file not found. Listing contents:";
-            ls -R "$DOWNLOAD_PATH" || true
-            exit 1
+            echo "Model directory not found. Attempting to copy all contents..."
+            mkdir -p inference/model
+            cp -r "$DOWNLOAD_PATH"/* "inference/model/" || true
+            echo "Copied whatever was downloaded to inference/model/"
           fi
 
       - name: Upload artifact

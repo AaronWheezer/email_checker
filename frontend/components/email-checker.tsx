@@ -22,21 +22,21 @@ export function EmailChecker() {
     setResult(null)
     setConfidence(null)
 
-    // Simulating API call to FastAPI backend
-    // Replace this with actual API call when ready
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Mock result - replace with actual API response
-    const mockResult: Result =
-      emailContent.toLowerCase().includes("free") ||
-      emailContent.toLowerCase().includes("winner") ||
-      emailContent.toLowerCase().includes("click here")
-        ? "spam"
-        : "ham"
-    const mockConfidence = Math.random() * 20 + 80 // 80-100%
-
-    setResult(mockResult)
-    setConfidence(mockConfidence)
+    try {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: emailContent })
+      })
+      const data = await res.json()
+      const predicted = (data?.prediction as Result) ?? null
+      const conf = typeof data?.confidence === "number" ? data.confidence : null
+      setResult(predicted)
+      setConfidence(conf)
+    } catch (e) {
+      setResult(null)
+      setConfidence(null)
+    }
     setIsLoading(false)
   }
 
@@ -94,14 +94,24 @@ export function EmailChecker() {
         <Card
           className={cn(
             "p-6 border-2 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4",
-            result === "ham" ? "bg-success/10 border-success" : "bg-destructive/10 border-destructive",
+            (() => {
+              if (confidence === null) return "bg-muted border-border"
+              if (confidence < 50) return "bg-destructive/15 border-destructive"
+              if (confidence < 66) return "bg-warning/20 border-warning" // orange mid range
+              return "bg-success/15 border-success"
+            })()
           )}
         >
           <div className="flex items-center gap-4">
             <div
               className={cn(
                 "w-14 h-14 rounded-full flex items-center justify-center",
-                result === "ham" ? "bg-success" : "bg-destructive",
+                (() => {
+                  if (confidence === null) return "bg-muted"
+                  if (confidence < 50) return "bg-destructive"
+                  if (confidence < 66) return "bg-warning"
+                  return "bg-success"
+                })(),
               )}
             >
               {result === "ham" ? (

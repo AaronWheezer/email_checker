@@ -1762,6 +1762,16 @@
     }
   }
 
+  .bg-destructive\/15 {
+    background-color: var(--destructive);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-destructive\/15 {
+      background-color: color-mix(in oklab, var(--destructive) 15%, transparent);
+    }
+  }
+
   .bg-foreground {
     background-color: var(--foreground);
   }
@@ -1825,6 +1835,16 @@
   @supports (color: color-mix(in lab, red, red)) {
     .bg-success\/10 {
       background-color: color-mix(in oklab, var(--success) 10%, transparent);
+    }
+  }
+
+  .bg-success\/15 {
+    background-color: var(--success);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-success\/15 {
+      background-color: color-mix(in oklab, var(--success) 15%, transparent);
     }
   }
 

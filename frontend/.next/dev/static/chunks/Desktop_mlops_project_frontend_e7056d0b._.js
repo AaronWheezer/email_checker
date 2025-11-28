@@ -239,6 +239,7 @@ __turbopack_context__.s([
     "EmailChecker",
     ()=>EmailChecker
 ]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = /*#__PURE__*/ __turbopack_context__.i("[project]/Desktop/mlops/project/frontend/node_modules/next/dist/build/polyfills/process.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/mlops/project/frontend/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/mlops/project/frontend/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/mlops/project/frontend/components/ui/button.tsx [app-client] (ecmascript)");
@@ -270,15 +271,25 @@ function EmailChecker() {
         setIsLoading(true);
         setResult(null);
         setConfidence(null);
-        // Simulating API call to FastAPI backend
-        // Replace this with actual API call when ready
-        await new Promise((resolve)=>setTimeout(resolve, 1500));
-        // Mock result - replace with actual API response
-        const mockResult = emailContent.toLowerCase().includes("free") || emailContent.toLowerCase().includes("winner") || emailContent.toLowerCase().includes("click here") ? "spam" : "ham";
-        const mockConfidence = Math.random() * 20 + 80 // 80-100%
-        ;
-        setResult(mockResult);
-        setConfidence(mockConfidence);
+        try {
+            const res = await fetch(("TURBOPACK compile-time value", "http://localhost:8000/predict") ?? "http://localhost:8000/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    text: emailContent
+                })
+            });
+            const data = await res.json();
+            const predicted = data?.prediction ?? null;
+            const conf = typeof data?.confidence === "number" ? data.confidence : null;
+            setResult(predicted);
+            setConfidence(conf);
+        } catch (e) {
+            setResult(null);
+            setConfidence(null);
+        }
         setIsLoading(false);
     };
     const handleReset = ()=>{
@@ -403,28 +414,39 @@ function EmailChecker() {
                 columnNumber: 7
             }, this),
             result && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
-                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])("p-6 border-2 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4", result === "ham" ? "bg-success/10 border-success" : "bg-destructive/10 border-destructive"),
+                className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])("p-6 border-2 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4", (()=>{
+                    if (confidence === null) return "bg-muted border-border";
+                    if (confidence < 50) return "bg-destructive/15 border-destructive";
+                    if (confidence < 66) return "bg-warning/20 border-warning" // orange mid range
+                    ;
+                    return "bg-success/15 border-success";
+                })()),
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "flex items-center gap-4",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])("w-14 h-14 rounded-full flex items-center justify-center", result === "ham" ? "bg-success" : "bg-destructive"),
+                            className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])("w-14 h-14 rounded-full flex items-center justify-center", (()=>{
+                                if (confidence === null) return "bg-muted";
+                                if (confidence < 50) return "bg-destructive";
+                                if (confidence < 66) return "bg-warning";
+                                return "bg-success";
+                            })()),
                             children: result === "ham" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$shield$2d$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ShieldCheck$3e$__["ShieldCheck"], {
                                 className: "w-7 h-7 text-success-foreground"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                                lineNumber: 108,
+                                lineNumber: 118,
                                 columnNumber: 17
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$shield$2d$alert$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ShieldAlert$3e$__["ShieldAlert"], {
                                 className: "w-7 h-7 text-destructive-foreground"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                                lineNumber: 110,
+                                lineNumber: 120,
                                 columnNumber: 17
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                            lineNumber: 101,
+                            lineNumber: 106,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -435,7 +457,7 @@ function EmailChecker() {
                                     children: result === "ham" ? "Legitimate Email" : "Spam Detected"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                                    lineNumber: 114,
+                                    lineNumber: 124,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -443,13 +465,13 @@ function EmailChecker() {
                                     children: result === "ham" ? "This email appears to be legitimate and safe." : "This email shows characteristics of spam or phishing."
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                                    lineNumber: 117,
+                                    lineNumber: 127,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                            lineNumber: 113,
+                            lineNumber: 123,
                             columnNumber: 13
                         }, this),
                         confidence && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -463,7 +485,7 @@ function EmailChecker() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                                    lineNumber: 125,
+                                    lineNumber: 135,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$mlops$2f$project$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -471,19 +493,19 @@ function EmailChecker() {
                                     children: "Confidence"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                                    lineNumber: 126,
+                                    lineNumber: 136,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                            lineNumber: 124,
+                            lineNumber: 134,
                             columnNumber: 15
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/mlops/project/frontend/components/email-checker.tsx",
-                    lineNumber: 100,
+                    lineNumber: 105,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {

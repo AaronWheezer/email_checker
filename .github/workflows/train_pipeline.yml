@@ -68,7 +68,7 @@ jobs:
             az extension add -n ml -y
             az configure --defaults group=rg-nathan-mpops workspace=ws-aaron-mlops
             MODEL_VERSION=$(az ml model list --name spam-classifier --query "[0].version" -o tsv)
-            DOWNLOAD_PATH="inference/download_temp"
+            DOWNLOAD_PATH="model_download_root"
             mkdir -p "$DOWNLOAD_PATH"
             az ml model download \
               --name spam-classifier \
@@ -78,7 +78,7 @@ jobs:
       - name: Move model artifact
         run: |
           set -e
-          DOWNLOAD_PATH="inference/download_temp"
+          DOWNLOAD_PATH="model_download_root"
           echo "Waiting 3 seconds..."; sleep 3
           MODEL_FILE=$(find "$DOWNLOAD_PATH" -type f -name "model.pkl" -print -quit)
           if [ -f "$MODEL_FILE" ]; then

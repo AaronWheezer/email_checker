@@ -70,20 +70,21 @@ jobs:
             MODEL_VERSION=$(az ml model list --name spam-classifier --query "sort_by(@,&version)[-1].version" -o tsv)
             if [ -z "$MODEL_VERSION" ]; then
               echo "No registered versions found for spam-classifier"; exit 1; fi
-            mkdir -p inference/model
+            mkdir -p inference
             az ml model download \
               --name spam-classifier \
               --version "$MODEL_VERSION" \
-              --download-path inference/model
+              --download-path inference \
+              --overwrite
 
       - name: Verify model contents
         run: |
-          echo "Tree under inference/model:"; ls -R inference/model || true
-          EXPECTED_DIR="inference/model/spam-classifier/model_output/model"
-          if [ -d "$EXPECTED_DIR" ]; then
-            echo "Found MLflow model directory: $EXPECTED_DIR"
+          echo "Tree under inference:"; ls -R inference || true
+          FOUND=$(find inference -type f -name MLmodel -print -quit)
+          if [ -n "$FOUND" ]; then
+            echo "Found MLflow MLmodel at: $FOUND"
           else
-            echo "Expected directory not found. Listing deeper:"; ls -R inference/model/spam-classifier || true
+            echo "No MLflow MLmodel file found under inference."; exit 1
           fi
 
       # Move step no longer needed; download goes directly into inference/model
@@ -92,6 +93,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: docker-config
-          path: inference/model/spam-classifier/model_output/model
+          path: inference
 
     # (Optional deploy job removed for clarity; re-add when needed.)

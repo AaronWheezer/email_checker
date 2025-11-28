@@ -76,12 +76,22 @@ jobs:
               --version "$MODEL_VERSION" \
               --download-path inference/model
 
+      - name: Verify model contents
+        run: |
+          echo "Tree under inference/model:"; ls -R inference/model || true
+          EXPECTED_DIR="inference/model/spam-classifier/model_output/model"
+          if [ -d "$EXPECTED_DIR" ]; then
+            echo "Found MLflow model directory: $EXPECTED_DIR"
+          else
+            echo "Expected directory not found. Listing deeper:"; ls -R inference/model/spam-classifier || true
+          fi
+
       # Move step no longer needed; download goes directly into inference/model
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: docker-config
-          path: inference
+          path: inference/model/spam-classifier/model_output/model
 
     # (Optional deploy job removed for clarity; re-add when needed.)

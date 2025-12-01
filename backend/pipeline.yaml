@@ -28,8 +28,7 @@ jobs:
       clean_data_input: ${{parent.jobs.preprocess_step.outputs.cleaned}}
     outputs:
       # Define the output directly on the step (not mapped to parent.outputs)
-      model_output:
-        type: uri_folder
+      model_output: ${{parent.outputs.model}}
 
   register_step:
     type: command

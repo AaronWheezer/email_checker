@@ -78,4 +78,53 @@ jobs:
         with:
           name: docker-config
           path: inference
+
+  deploy:
+    needs: download
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/email-spam-api
+
+    steps:
+      - name: Docker -- Gather Tags
+        id: docker-meta-data
+        uses: docker/metadata-action@v5.5.1
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+
+      - name: Docker -- Login to GHCR
+        uses: docker/login-action@v3.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker -- Download API Code for Inference
+        uses: actions/download-artifact@v4.1.7
+        with:
+          name: docker-config
+          path: inference
+
+      - name: Docker Build and Push
+        id: docker_build
+        uses: docker/build-push-action@v5.3.0
+        with:
+          context: ./inference
+          push: true
+          tags: ${{ steps.docker-meta-data.outputs.tags }}
+
+      - name: Deploy to Kubernetes using Kubectl
+        shell: pwsh
+        run: |
+          $imageTag = ("${{ steps.docker-meta-data.outputs.tags }}" -split "`r`n" | Select-Object -First 1)
+          Write-Host "Deploying image: $imageTag"
+          (Get-Content -Path ./kubernetes/deployment.yaml) -replace 'ghcr.io/[^/]+/[^:]+:LATEST_TAG_PLACEHOLDER', $imageTag | Set-Content -Path ./kubernetes/deployment.yaml
+          kubectl apply -f ./kubernetes/deployment.yaml
     # (Optional deploy job removed for clarity; re-add when needed.)

@@ -126,8 +126,8 @@ jobs:
       - name: Deploy to Kubernetes using Kubectl
         shell: pwsh
         run: |
-          $allTags = "${{ steps.docker-meta-data.outputs.tags }}".Split([Environment]::NewLine, [System.StringSplitOptions]::RemoveEmptyEntries)
-          $imageTag = $allTags[0]
+          $rawTags = "${{ steps.docker-meta-data.outputs.tags }}"
+          $imageTag = ($rawTags -split "`n``r|`r`n|`n")[0].Trim()
           Write-Host "Deploying image: $imageTag"
           (Get-Content -Path ./kubernetes/deployment.yaml) -replace 'ghcr.io/[^/]+/[^:]+:LATEST_TAG_PLACEHOLDER', $imageTag | Set-Content -Path ./kubernetes/deployment.yaml
           kubectl apply -f ./kubernetes/deployment.yaml

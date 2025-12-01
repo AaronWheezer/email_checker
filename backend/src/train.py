@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 # ... (rest of imports) ...
 
 def main():
@@ -50,6 +51,16 @@ def main():
     pipeline.fit(X_train, y_train) 
     # 7. Evaluate (DEFINES predictions)
     predictions = pipeline.predict(X_test)
+
+    accuracy = accuracy_score(y_test, predictions)
+    precision = precision_score(y_test, predictions)
+    recall = recall_score(y_test, predictions)
+    f1 = f1_score(y_test, predictions)
+
+    mlflow.log_metric("accuracy", accuracy)
+    mlflow.log_metric("precision", precision)
+    mlflow.log_metric("recall", recall)
+    mlflow.log_metric("f1", f1)
     
 
     # 9. Register the model explicitly with a signature 

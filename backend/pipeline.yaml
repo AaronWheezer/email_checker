@@ -34,6 +34,9 @@ jobs:
   register_step:
     type: command
     component: azureml://registries/azureml/components/register_model/versions/0.0.21
+    identity:
+      type: user_identity
+    # 👆 END ADDITION
     inputs:
       # 1. Matches the name in your GitHub Action download script
       model_name: spam-classifier 

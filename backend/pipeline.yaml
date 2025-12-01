@@ -1,3 +1,5 @@
+# Alternative YAML without top-level outputs
+
 $schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
 
 type: pipeline
@@ -12,41 +14,20 @@ inputs:
     path: azureml:Spam_HAM:1
 
 jobs:
+
   preprocess_step:
     type: command
-    code: ./src
-    environment:
-      conda_file: ./src/conda.yaml
-      image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest
-
-    command: >-
-      python preprocess.py
-      --raw_data ${{inputs.raw_data}}
-      --output_data ${{outputs.cleaned}}
-
+    component: ./components/preprocess/preprocess.yaml
     inputs:
       raw_data: ${{parent.inputs.raw_data_input}}
 
-    outputs:
-      cleaned:
-        type: uri_folder
-
   train_step:
     type: command
-    code: ./src
-    environment:
-      conda_file: ./src/conda.yaml
-      image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest
-
-    command: >-
-      python train_pipeline.py
-      --clean_data ${{inputs.clean_data_input}}
-      --model_output ${{outputs.model_output}}
-
+    component: ./components/train/train.yaml
     inputs:
       clean_data_input: ${{parent.jobs.preprocess_step.outputs.cleaned}}
-
     outputs:
+      # Define the output directly on the step (not mapped to parent.outputs)
       model_output:
         type: uri_folder
 
@@ -56,4 +37,8 @@ jobs:
     inputs:
       model_name: spam-classifier
       model_type: custom_model
-      model_path: ${{parent.jobs.train_step.outputs.model_output}}
+      model_path: ${{parent.jobs.train_step.outputs.model_output}} # Reference remains the same
+    outputs:
+      # Define the output directly on the step (not mapped to parent.outputs)
+      registration_details_folder:
+        type: uri_folder

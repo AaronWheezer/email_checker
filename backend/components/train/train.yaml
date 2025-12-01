@@ -1,0 +1,22 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+name: train_spam_classifier
+display_name: Train Spam Classifier
+type: command
+
+inputs:
+  clean_data_input:
+    type: uri_folder
+
+outputs:
+  output_folder:
+    type: uri_folder
+
+code: ../../src
+environment:
+  conda_file: ../../src/conda.yaml
+  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest
+
+command: >-
+  python train_pipeline.py
+  --clean_data ${{inputs.clean_data_input}}
+  --model_output ${{outputs.output_folder}}

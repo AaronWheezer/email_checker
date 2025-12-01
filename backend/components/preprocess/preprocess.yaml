@@ -1,0 +1,22 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+name: preprocess_spam
+display_name: Preprocess Spam Data
+type: command
+
+inputs:
+  raw_data:
+    type: uri_file
+
+outputs:
+  cleaned:
+    type: uri_folder
+
+code: ../../src
+environment:
+  conda_file: ../../src/conda.yaml
+  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04:latest
+
+command: >-
+  python preprocess.py
+  --raw_data ${{inputs.raw_data}}
+  --output_data ${{outputs.cleaned}}

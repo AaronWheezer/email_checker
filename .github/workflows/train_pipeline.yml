@@ -81,7 +81,7 @@ jobs:
 
   deploy:
     needs: download
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write

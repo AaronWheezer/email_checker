@@ -1,5 +1,3 @@
-# Alternative YAML without top-level outputs
-
 $schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
 
 type: pipeline
@@ -12,6 +10,9 @@ inputs:
   raw_data_input:
     type: uri_file
     path: azureml:Spam_HAM:1
+
+# No top-level outputs needed for your goal
+# outputs: 
 
 jobs:
 
@@ -26,18 +27,16 @@ jobs:
     component: ./components/train/train.yaml
     inputs:
       clean_data_input: ${{parent.jobs.preprocess_step.outputs.cleaned}}
-    outputs:
-      # Define the output directly on the step (not mapped to parent.outputs)
-      model_output: ${{parent.outputs.model}}
+    # WE REMOVED THE OUTPUTS SECTION HERE
+    # We don't need to explicitly list 'outputs' unless mapping to parent.
+    # The component 'output_folder' is automatically available to the next step.
 
   register_step:
     type: command
     component: azureml://registries/azureml/components/register_model/versions/0.0.21
     inputs:
-      model_name: spam-classifier
+      # 1. Matches the name in your GitHub Action download script
+      model_name: spam-classifier 
       model_type: custom_model
-      model_path: ${{parent.jobs.train_step.outputs.model_output}} # Reference remains the same
-    outputs:
-      # Define the output directly on the step (not mapped to parent.outputs)
-      registration_details_folder:
-        type: uri_folder
+      # 2. FIX: Reference the Component Output Name 'output_folder'
+      model_path: ${{parent.jobs.train_step.outputs.output_folder}}

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spam-classifier-api
+  labels:
+    app: spam-classifier-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: spam-classifier-api
+  template:
+    metadata:
+      labels:
+        app: spam-classifier-api
+    spec:
+      containers:
+        - name: spam-classifier-api
+          image: ghcr.io/aaronwheezer/email-spam-api:LATEST_TAG_PLACEHOLDER
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PORT
+              value: "8000"
+            - name: MODEL_PATH
+              value: /app/model
+            - name: MODEL_PKL
+              value: /app/model.pkl
+            - name: DB_PATH
+              value: /app/predictions.db
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spam-classifier-service
+  labels:
+    app: spam-classifier-api
+spec:
+  selector:
+    app: spam-classifier-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer

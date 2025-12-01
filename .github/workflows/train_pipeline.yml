@@ -49,10 +49,10 @@ jobs:
 
   download:
     needs: train
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Azure Login
@@ -60,48 +60,21 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Download and Move Model Artifact
-        run: |
-          # 1. SETUP AZURE CLI ENVIRONMENT
-          az extension add -n ml -y
-          az configure --defaults group=rg-nathan-mpops workspace=ws-aaron-mlops
-          
-          # 2. GET MODEL VERSION
-          MODEL_VERSION=$(az ml model list --name spam-classifier --query "sort_by(@,&version)[-1].version" -o tsv)
-          if [ -z "$MODEL_VERSION" ]; then
-            echo "No registered versions found for spam-classifier"; exit 1; fi
-          
-          DOWNLOAD_TEMP="model_download_root"
-          mkdir -p "$DOWNLOAD_TEMP"
-          
-          echo "Downloading model version $MODEL_VERSION to $DOWNLOAD_TEMP..."
-          # 3. DOWNLOAD MODEL
-          az ml model download \
-            --name spam-classifier \
-            --version "$MODEL_VERSION" \
-            --download-path "$DOWNLOAD_TEMP"
-          
-          echo "Download complete. Finding and moving nested files..."
-          
-          # 4. LOCATE THE MLflow MODEL ROOT (Find MLmodel then parent directory)
-          FOUND_MLMODEL=$(find "$DOWNLOAD_TEMP" -type f -name MLmodel -print -quit)
-          
-          if [ -n "$FOUND_MLMODEL" ]; then
-            MODEL_ROOT=$(dirname "$FOUND_MLMODEL")
-            echo "MLflow Model files found in: $MODEL_ROOT"
-            mkdir -p inference
-            mv "$MODEL_ROOT"/* inference/
-            rm -rf "$DOWNLOAD_TEMP"
-            echo "✅ Model files successfully moved and staged in inference/"
-            echo "Final file tree under inference/:"; ls -R inference
-          else
-            echo "❌ No MLflow MLmodel file found after download."
-            ls -R "$DOWNLOAD_TEMP" || true
-            exit 1
-          fi
+      - name: Azure -- Download Model
+        uses: azure/CLI@v2.2.0
+        with:
+          azcliversion: 2.80.0
+          inlineScript: |
+            az extension add --name ml -y
+            az configure --defaults group=rg-nathan-mpops workspace=ws-aaron-mlops location=westeurope
+            VERSION=$(az ml model list -n spam-classifier --query "[0].version" -o tsv)
+            if [ -z "$VERSION" ]; then
+              echo "No registered versions found for spam-classifier"; exit 1;
+            fi
+            az ml model download --name spam-classifier --version "$VERSION" --download-path ./inference
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Docker -- Upload API code from Inference
+        uses: actions/upload-artifact@v4.3.3
         with:
           name: docker-config
           path: inference

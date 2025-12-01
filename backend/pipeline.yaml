@@ -48,6 +48,12 @@ jobs:
 
     outputs:
       model_output:
-        type: mlflow_model         # <---- REGISTER MODEL AUTOMATICALLY
-        mode: upload               # <---- REQUIRED
-        name: spam-classifier      # <---- REGISTERED MODEL NAME
+        type: uri_folder
+
+  register_step:
+    type: command
+    component: azureml://registries/azureml/components/register_model/versions/0.0.21
+    inputs:
+      model_name: spam-classifier
+      model_type: custom_model
+      model_path: ${{parent.jobs.train_step.outputs.model_output}}

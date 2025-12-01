@@ -90,6 +90,9 @@ jobs:
       IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/email-spam-api
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Docker -- Gather Tags
         id: docker-meta-data
         uses: docker/metadata-action@v5.5.1

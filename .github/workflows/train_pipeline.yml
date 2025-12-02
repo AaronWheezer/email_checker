@@ -81,7 +81,7 @@ jobs:
 
   deploy:
     needs: download
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: read
       packages: write
@@ -122,6 +122,14 @@ jobs:
           context: ./inference
           push: true
           tags: ${{ steps.docker-meta-data.outputs.tags }}
+
+      - name: Configure kubeconfig
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          mkdir -p ~/.kube
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > ~/.kube/config
+          chmod 600 ~/.kube/config
 
       - name: Deploy to Kubernetes using Kubectl
         shell: pwsh

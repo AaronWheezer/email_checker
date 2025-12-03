@@ -138,10 +138,12 @@ jobs:
           
       # --- NEW: Image Import Step ---
       - name: Import Image into k3d Cluster
-        # This makes the newly built image available inside the local k3d cluster's registry.
+        shell: pwsh
         run: |
-          TAGS_TO_IMPORT=$(echo "${{ steps.docker-meta-data.outputs.tags }}" | tr -d '\n\r')
-          k3d image import $TAGS_TO_IMPORT --cluster spam-cluster
+          $tagsToImport = "${{ steps.docker-meta-data.outputs.tags }}" -split "`r`n|`n`r|`n" | Where-Object { $_ -ne '' }
+          foreach ($tag in $tagsToImport) {
+            k3d image import $tag --cluster spam-cluster
+          }
       # --- END Image Import Step ---
         
       - name: Deploy to Kubernetes using Kubectl

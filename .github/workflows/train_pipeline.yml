@@ -96,9 +96,14 @@ jobs:
         uses: actions/checkout@v4
       
     
-      - name: Create k3d Cluster (github-actions-test) 🐳
-        # Creates a cluster named 'github-actions-test', setting the KUBECONFIG.
-        run: k3d cluster create github-actions-test 
+      - name: Create k3d Cluster (spam-cluster) 🐳
+        shell: pwsh
+        run: |
+          if (k3d cluster list | Select-String -SimpleMatch "spam-cluster") {
+            Write-Host "k3d cluster 'spam-cluster' already exists. Skipping creation."
+          } else {
+            k3d cluster create spam-cluster
+          }
       # --- END k3d Setup Steps ---
 
       - name: Docker -- Gather Tags
@@ -136,7 +141,7 @@ jobs:
         # This makes the newly built image available inside the local k3d cluster's registry.
         run: |
           TAGS_TO_IMPORT=$(echo "${{ steps.docker-meta-data.outputs.tags }}" | tr -d '\n\r')
-          k3d image import $TAGS_TO_IMPORT --cluster github-actions-test
+          k3d image import $TAGS_TO_IMPORT --cluster spam-cluster
       # --- END Image Import Step ---
         
       - name: Deploy to Kubernetes using Kubectl
@@ -152,5 +157,11 @@ jobs:
       # --- NEW: Cleanup Step ---
       - name: Delete Local k3d Cluster (Cleanup) 🗑️
         if: always() # Run this step even if the deployment fails
-        run: k3d cluster delete github-actions-test
+        shell: pwsh
+        run: |
+          if (k3d cluster list | Select-String -SimpleMatch "spam-cluster") {
+            k3d cluster delete spam-cluster
+          } else {
+            Write-Host "k3d cluster 'spam-cluster' not found. Nothing to delete."
+          }
       # --- END Cleanup Step ---

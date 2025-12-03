@@ -95,13 +95,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      # --- NEW: k3d Setup Steps ---
-      - name: Install k3d and kubectl (if needed) 🛠️
-        # This will install k3d on your self-hosted runner. 
-        # Assumes a Linux/Bash environment.
-        run: |
-          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-          
+    
       - name: Create k3d Cluster (github-actions-test) 🐳
         # Creates a cluster named 'github-actions-test', setting the KUBECONFIG.
         run: k3d cluster create github-actions-test 

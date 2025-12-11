@@ -10,15 +10,13 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     build-essential \
  && rm -rf /var/lib/apt/lists/*
 
-# Copy app code and requirements
-COPY app.py ./app.py
-COPY requirements.txt ./requirements.txt
+# Copy entire inference context (includes app.py, requirements.txt, and optionally model files)
+COPY . ./
 
-# Create model directory (model can be mounted or copied later)
-RUN mkdir -p /app/model
-
-# Install Python deps
-RUN pip install --no-cache-dir -r requirements.txt
+# Ensure model directory exists even if no model is copied
+RUN mkdir -p /app/model \
+ && python -V \
+ && pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8000
 

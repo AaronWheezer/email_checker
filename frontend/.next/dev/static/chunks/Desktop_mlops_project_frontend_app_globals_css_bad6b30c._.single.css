@@ -1668,16 +1668,6 @@
     background-color: var(--destructive);
   }
 
-  .bg-destructive\/10 {
-    background-color: var(--destructive);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .bg-destructive\/10 {
-      background-color: color-mix(in oklab, var(--destructive) 10%, transparent);
-    }
-  }
-
   .bg-destructive\/15 {
     background-color: var(--destructive);
   }
@@ -1742,16 +1732,6 @@
 
   .bg-success {
     background-color: var(--success);
-  }
-
-  .bg-success\/10 {
-    background-color: var(--success);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .bg-success\/10 {
-      background-color: color-mix(in oklab, var(--success) 10%, transparent);
-    }
   }
 
   .bg-success\/15 {

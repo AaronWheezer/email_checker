@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spam-classifier-api-local
+  labels:
+    app: spam-classifier-api-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spam-classifier-api-local
+  template:
+    metadata:
+      labels:
+        app: spam-classifier-api-local
+    spec:
+      containers:
+        - name: spam-classifier-api
+          image: ghcr.io/aaronwheezer/email-spam-api:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PORT
+              value: "8000"
+            - name: MODEL_PATH
+              value: /app/model
+            - name: MODEL_PKL
+              value: /app/model.pkl
+            - name: DB_PATH
+              value: /app/predictions.db
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spam-classifier-service-local
+  labels:
+    app: spam-classifier-api-local
+spec:
+  selector:
+    app: spam-classifier-api-local
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+      nodePort: 30080
+  type: NodePort

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: spam-classifier-api
-          image: ghcr.io/aaronwheezer/email-spam-api:local
+          image: ghcr.io/aaronwheezer/email-spam-api:main
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000

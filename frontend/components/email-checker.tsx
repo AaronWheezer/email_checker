@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card"
 import { ShieldCheck, ShieldAlert, Loader2, Sparkles, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-type Result = "spam" | "ham" | null
+type Result = 0 | 1 | null
 
 export function EmailChecker() {
   const [emailContent, setEmailContent] = useState("")
@@ -23,13 +23,25 @@ export function EmailChecker() {
     setConfidence(null)
 
     try {
-      const res = await fetch(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/predict", {
+      const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
+      const url = base.endsWith("/predict") ? base : `${base.replace(/\/$/, "")}/predict`
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: emailContent })
       })
       const data = await res.json()
-      const predicted = (data?.prediction as Result) ?? null
+      // Map prediction: support numeric (1/0) and string ("spam"/"ham") responses
+      let predicted: Result = null
+      if (typeof data?.prediction === "number") {
+        predicted = data.prediction === 1 ? 1 : 0
+      } else if (typeof data?.prediction === "string") {
+        const p = (data.prediction as string).toLowerCase().trim()
+        // Support string labels: "spam"/"ham" and numeric strings: "1"/"0"
+        if (p === "spam" || p === "1") predicted = 1
+        else if (p === "ham" || p === "0") predicted = 0
+        else predicted = null
+      }
       const conf = typeof data?.confidence === "number" ? data.confidence : null
       setResult(predicted)
       setConfidence(conf)
@@ -81,7 +93,7 @@ export function EmailChecker() {
                 </>
               )}
             </Button>
-            {(result || emailContent) && (
+            {(result !== null || !!emailContent) && (
               <Button onClick={handleReset} variant="outline" className="border-border bg-transparent">
                 <RotateCcw className="w-4 h-4" />
               </Button>
@@ -90,31 +102,21 @@ export function EmailChecker() {
         </div>
       </Card>
 
-      {result && (
+      {result !== null && (
         <Card
           className={cn(
             "p-6 border-2 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4",
-            (() => {
-              if (confidence === null) return "bg-muted border-border"
-              if (confidence < 50) return "bg-destructive/15 border-destructive"
-              if (confidence < 66) return "bg-warning/20 border-warning" // orange mid range
-              return "bg-success/15 border-success"
-            })()
+            result === 1 ? "bg-destructive/15 border-destructive" : "bg-success/15 border-success"
           )}
         >
           <div className="flex items-center gap-4">
             <div
               className={cn(
                 "w-14 h-14 rounded-full flex items-center justify-center",
-                (() => {
-                  if (confidence === null) return "bg-muted"
-                  if (confidence < 50) return "bg-destructive"
-                  if (confidence < 66) return "bg-warning"
-                  return "bg-success"
-                })(),
+                result === 1 ? "bg-destructive" : "bg-success",
               )}
             >
-              {result === "ham" ? (
+              {result === 0 ? (
                 <ShieldCheck className="w-7 h-7 text-success-foreground" />
               ) : (
                 <ShieldAlert className="w-7 h-7 text-destructive-foreground" />
@@ -122,18 +124,18 @@ export function EmailChecker() {
             </div>
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-foreground">
-                {result === "ham" ? "Legitimate Email" : "Spam Detected"}
+                {result === 0 ? "Legitimate Email" : "Spam Detected"}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {result === "ham"
+                {result === 0
                   ? "This email appears to be legitimate and safe."
                   : "This email shows characteristics of spam or phishing."}
               </p>
             </div>
-            {confidence && (
+            {typeof confidence === "number" && (
               <div className="text-right">
-                <p className="text-2xl font-bold text-foreground">{confidence.toFixed(1)}%</p>
-                <p className="text-xs text-muted-foreground">Confidence</p>
+                <p className="text-sm font-medium text-foreground">{confidence.toFixed(1)}%</p>
+                <p className="text-[10px] text-muted-foreground">Confidence</p>
               </div>
             )}
           </div>
